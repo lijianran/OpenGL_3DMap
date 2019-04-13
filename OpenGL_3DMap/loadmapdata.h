@@ -14,13 +14,15 @@ public:
 #include <QMap>
 #include <QDebug>
 
-struct QPointD{
+struct QPointD
+{
     QPointD(): x(0), y(0){}
     QPointD(float x, float y){
         this->x = x;
         this->y = y;
     }
-    QPointD(const QPointD& other){
+    QPointD(const QPointD& other)
+    {
         this->x = other.x;
         this->y = other.y;
     }
@@ -29,11 +31,11 @@ struct QPointD{
     float y;
 };
 
-class OpenSMWay{
+class OpenSMWay
+{
 public:
     OpenSMWay(): isDraw(false){}
-    ~OpenSMWay(){
-    }
+    ~OpenSMWay(){}
 
     QVector<QString> nodesID;
     QMap<QString, QString> kvPairs;
@@ -46,7 +48,8 @@ public:
     bool isDraw;
 };
 
-class OpenSMLoading{
+class OpenSMLoading
+{
 public:
     OpenSMLoading();
     ~OpenSMLoading();

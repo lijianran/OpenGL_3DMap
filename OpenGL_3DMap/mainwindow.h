@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QFileDialog>
 #include "openglwindow.h"
 
 namespace Ui {
@@ -29,9 +30,11 @@ private:
     Ui::MainWindow *ui;
 
 private slots:
-    void slot_updateOpenGL(){
+    void slot_updateOpenGL()
+    {
       m_GLWindow->update();
     }
+    void on_action_triggered();
 };
 
 #endif // MAINWINDOW_H

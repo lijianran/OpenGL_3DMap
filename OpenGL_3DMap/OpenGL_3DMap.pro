@@ -29,9 +29,6 @@ SOURCES += \
         mainwindow.cpp \
     openglwindow.cpp \
     resourcemanager.cpp \
-    texture2d.cpp \
-    shader.cpp \
-    camera.cpp \
     loadmodel.cpp \
     carcontrol.cpp \
     loadmapdata.cpp
@@ -40,9 +37,6 @@ HEADERS += \
         mainwindow.h \
     openglwindow.h \
     resourcemanager.h \
-    texture2d.h \
-    shader.h \
-    camera.h \
     loadmodel.h \
     carcontrol.h \
     loadmapdata.h

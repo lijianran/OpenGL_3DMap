@@ -34,3 +34,13 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
 void MainWindow::keyReleaseEvent(QKeyEvent *event){
     m_GLWindow->KeyReleaseEvent(event);
 }
+
+void MainWindow::on_action_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("打开文件"),
+                                                    "F:",
+                                                    tr("地图文件(*osm)"));
+    qDebug()<<"filename : "<<fileName;
+
+}

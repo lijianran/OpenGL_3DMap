@@ -91,7 +91,7 @@ void OpenGLWindow::initializeGL()
 
     /************地图数据***********/
     map = new OpenSMLoading();
-    map->init("C:/Users/lijianran/Desktop/2.osm");
+    map->init("C:/Users/lijianran/Desktop/map.osm");
     map->initGL();
 
     //    /************ CarControl汽车控制 ***********/
@@ -115,11 +115,9 @@ void OpenGLWindow::initializeGL()
     ResourceManager::loadShader("osm_landuse", ":/res/shaders/osm_landuse.vert", ":/res/shaders/osm_landuse.frag");
     ResourceManager::loadShader("model", ":/res/shaders/model.vert", ":/res/shaders/model.frag");
 
-    //ResourceManager::loadTexture("osm_highway", ":/res/textures/black.png");
     ResourceManager::loadTexture("osm_highway", ":/res/textures/highway.png");
     ResourceManager::loadTexture("osm_building", ":/res/textures/red.png");
     ResourceManager::loadTexture("osm_background", ":/res/textures/background.png");
-    //ResourceManager::loadTexture("osm_background", ":/res/textures/black.png");
 
     ResourceManager::loadTexture("osm_amenity", ":/res/textures/amenity.png");
     ResourceManager::loadTexture("osm_leisure", ":/res/textures/leisure.png");
@@ -197,8 +195,8 @@ void OpenGLWindow::initializeGL()
     ResourceManager::getShader("osm_landuse").use().setVector3f("material.Ks", QVector3D(0.1f, 0.1f, 0.1f));
     ResourceManager::getShader("osm_landuse").use().setVector3f("light.direction", LIGHT_DIRECTION);
 
-
     ResourceManager::getShader("image2D").use().setInteger("ambientMap", 0);
+
 
     QMatrix4x4 model;
     model.translate(LIGHT_POSITION);
@@ -221,7 +219,6 @@ void OpenGLWindow::initializeGL()
     model.translate(-map->minPoint.x, 0, map->minPoint.y);
     ResourceManager::getShader("osm_highway").use().setMatrix4f("model", model);
     ResourceManager::getShader("normal_test").use().setMatrix4f("model", model);
-
 
     model.setToIdentity();
     model.scale(100.0f, 0.12f, 100.0f);
@@ -258,8 +255,6 @@ void OpenGLWindow::initializeGL()
     model.translate(-map->minPoint.x, 0, map->minPoint.y);
     ResourceManager::getShader("osm_landuse").use().setMatrix4f("model", model);
 
-
-
     model.setToIdentity();
     model.translate(0.0f, -0.05f, 0.0f);
     model.scale(30.0f);
@@ -287,29 +282,132 @@ void OpenGLWindow::initializeGL()
 
 
 
-
-
     //////////////////ResourceManager::getShader("model").use().setMatrix4f("model", control.getModelMatrix());
 
 }
-
 
 void OpenGLWindow::resizeGL(int w, int h)
 {
     core->glViewport(0, 0, w, h);
 }
 
+void OpenGLWindow::paintGL()
+{
+    /*********** 计算两次帧数之间的时间间隔 ***************/
+    GLfloat currentFrame = static_cast<GLfloat>(time.elapsed())/100;
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
+    this->processInput(deltaTime);
+    this->updateGL();
+
+    /********* 绘制osm 背景 ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_background").bind();
+    ResourceManager::getShader("image2D").use();
+    image->draw();
+
+    /********* 绘制坐标系统 ************/
+    ResourceManager::getShader("coordinate").use();
+    coordinate->draw();
+
+    //    /********* 绘制车 ************/
+    //    ResourceManager::getShader("model").use();
+    //    control.draw(this->isOpenLighting);
+
+    /********* 绘制 highway ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_highway").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_highway").bind();
+
+    ResourceManager::getShader("osm_highway").use();
+    map->drawGL_Highway();
+
+    //  ResourceManager::getShader("normal_test").use();
+    //  map->drawGL_Highway();
+
+    /********* 绘制 building ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_building").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_building").bind();
+
+    ResourceManager::getShader("osm_building").use();
+    map->drawGL_Building();
+
+    /********* 绘制 amentiy ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_amenity").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_amenity").bind();
+
+    ResourceManager::getShader("osm_amenity").use();
+    map->drawGL_Amenity();
+
+    /********* 绘制 leisure ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_leisure").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_leisure").bind();
+
+    ResourceManager::getShader("osm_leisure").use();
+    map->drawGL_Leisure();
+
+    /********* 绘制 area ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_area").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_area").bind();
+
+    ResourceManager::getShader("osm_area").use();
+    map->drawGL_Area();
+
+    /********* 绘制 osm water ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_water").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_water").bind();
+
+    ResourceManager::getShader("osm_water").use();
+    map->drawGL_Water();
+
+    /********* 绘制 natural ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_natural").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_natural").bind();
+
+    ResourceManager::getShader("osm_natural").use();
+    map->drawGL_Natural();
+
+    /********* 绘制 landuse ************/
+    core->glActiveTexture(GL_TEXTURE0);
+    ResourceManager::getTexture("osm_landuse").bind();
+    core->glActiveTexture(GL_TEXTURE1);
+    ResourceManager::getTexture("osm_landuse").bind();
+
+    ResourceManager::getShader("osm_landuse").use();
+    map->drawGL_Landuse();
+
+    /********* 恢复重新绘图 ************/
+    map->drawGL_Recover();
+}
+
 void OpenGLWindow::updateGL()
 {
+//    map->init("C:/Users/lijianran/Desktop/2.osm");
+//    map->initGL();
+
     if(this->isLineMode)
         core->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
         core->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    QMatrix4x4 projection, view;
+    QMatrix4x4 projection;
 
     projection.perspective(camera->zoom, static_cast<GLfloat>(width())/static_cast<GLfloat>(height()), 0.01f, 200.f);
-    view = camera->getViewMatrix();
+//    QMatrix4x4 view = camera->getViewMatrix();
 
     ResourceManager::getShader("light").use().setMatrix4f("projection", projection);
     ResourceManager::getShader("light").use().setMatrix4f("view", camera->getViewMatrix());
@@ -324,7 +422,6 @@ void OpenGLWindow::updateGL()
     ResourceManager::getShader("osm_highway").use().setMatrix4f("projection", projection);
     ResourceManager::getShader("osm_highway").use().setMatrix4f("view", camera->getViewMatrix());
     ResourceManager::getShader("osm_highway").use().setVector3f("viewPos", camera->position);
-
 
     ResourceManager::getShader("coordinate").use().setMatrix4f("projection", projection);
     ResourceManager::getShader("coordinate").use().setMatrix4f("view", camera->getViewMatrix());
@@ -397,110 +494,8 @@ void OpenGLWindow::updateGL()
     //  }
 }
 
-void OpenGLWindow::paintGL(){
-    /*********** 计算两次帧数之间的时间间隔  ***************/
-    GLfloat currentFrame = static_cast<GLfloat>(time.elapsed())/100;
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
-
-    this->processInput(deltaTime);
-    this->updateGL();
-
-    /*********  绘制osm 背景 ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_background").bind();
-    ResourceManager::getShader("image2D").use();
-    image->draw();
-
-    /*********  绘制坐标系统 ************/
-    ResourceManager::getShader("coordinate").use();
-    coordinate->draw();
-
-    //    /*********  绘制车 ************/
-    //    ResourceManager::getShader("model").use();
-    //    control.draw(this->isOpenLighting);
-
-    /*********  绘制 osm highway ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_highway").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_highway").bind();
-
-    ResourceManager::getShader("osm_highway").use();
-    map->drawGL_Highway();
-
-    //  ResourceManager::getShader("normal_test").use();
-    //  map->drawGL_Highway();
-
-    /*********  绘制 osm building ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_building").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_building").bind();
-
-    ResourceManager::getShader("osm_building").use();
-    map->drawGL_Building();
-
-    /*********  绘制 osm amentiy ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_amenity").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_amenity").bind();
-
-    ResourceManager::getShader("osm_amenity").use();
-    map->drawGL_Amenity();
-
-    /*********  绘制 osm leisure ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_leisure").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_leisure").bind();
-
-    ResourceManager::getShader("osm_leisure").use();
-    map->drawGL_Leisure();
-
-    /*********  绘制 osm area ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_area").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_area").bind();
-
-    ResourceManager::getShader("osm_area").use();
-    map->drawGL_Area();
-
-    /*********  绘制 osm water ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_water").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_water").bind();
-
-    ResourceManager::getShader("osm_water").use();
-    map->drawGL_Water();
-
-    /*********  绘制 osm natural ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_natural").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_natural").bind();
-
-    ResourceManager::getShader("osm_natural").use();
-    map->drawGL_Natural();
-
-    /*********  绘制 osm landuse ************/
-    core->glActiveTexture(GL_TEXTURE0);
-    ResourceManager::getTexture("osm_landuse").bind();
-    core->glActiveTexture(GL_TEXTURE1);
-    ResourceManager::getTexture("osm_landuse").bind();
-
-    ResourceManager::getShader("osm_landuse").use();
-    map->drawGL_Landuse();
-
-    /*********  绘制osm 恢复重新绘图 ************/
-    map->drawGL_Recover();
-
-}
-
-void OpenGLWindow::processInput(GLfloat dt){
+void OpenGLWindow::processInput(GLfloat dt)
+{
     //相机控制
     if (keys[Qt::Key_W])
         camera->processKeyboard(CAMERA_FORWARD, dt);
@@ -515,7 +510,7 @@ void OpenGLWindow::processInput(GLfloat dt){
     if (keys[Qt::Key_Q])
         camera->processKeyboard(CAMERA_DOWN, dt);
     //    //车辆控制
-    //    if (keys[Qt::Key_I])            //为什么不用Key_Up 因为，他的十六进制为0x01000013，转为十进制为16777235，已经超过1024
+    //    if (keys[Qt::Key_I])
     //        control.processKeyboard(CAR_STRAIGHT, dt);
     //    if (keys[Qt::Key_K])
     //        control.processKeyboard(CAR_BACKWARD, dt);
@@ -525,7 +520,8 @@ void OpenGLWindow::processInput(GLfloat dt){
     //        control.processKeyboard(CAR_RIGHT, dt);
 }
 
-void OpenGLWindow::mouseMoveEvent(QMouseEvent *event){
+void OpenGLWindow::mouseMoveEvent(QMouseEvent *event)
+{
     GLint xpos = event->pos().x();
     GLint ypos = event->pos().y();
     if(isLeftMousePress)
@@ -552,7 +548,8 @@ void OpenGLWindow::mousePressEvent(QMouseEvent *event)
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton){
+    if(event->button() == Qt::LeftButton)
+    {
         isLeftMousePress = GL_FALSE;
         isFirstMouse = GL_TRUE;
     }
@@ -564,21 +561,90 @@ void OpenGLWindow::wheelEvent(QWheelEvent *event)
     camera->processMouseScroll(offset.y()/20.0f);
 }
 
+/**************相机************************/
+
+QMatrix4x4 Camera::getViewMatrix()
+{
+    QMatrix4x4 view;
+    view.lookAt(this->position, this->position + this->front, this->up);
+    return view;
+}
+
+//键盘
+void Camera::processKeyboard(Camera_Movement direction, GLfloat deltaTime)
+{
+    GLfloat velocity = this->movementSpeed * deltaTime;
+    if (direction == CAMERA_FORWARD)
+        this->position += this->front * velocity;
+    if (direction == CAMERA_BACKWARD)
+        this->position -= this->front * velocity;
+    if (direction == CAMERA_LEFT)
+        this->position -= this->right * velocity;
+    if (direction == CAMERA_RIGHT)
+        this->position += this->right * velocity;
+    if (direction == CAMERA_UP)
+        this->position += this->worldUp * velocity;
+    if (direction == CAMERA_DOWN)
+        this->position -= this->worldUp * velocity;
+}
+
+//鼠标
+void Camera::processMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constraintPitch)
+{
+    xoffset *= this->mouseSensitivity;
+    yoffset *= this->mouseSensitivity;
+
+    this->yaw += xoffset;
+    this->picth += yoffset;
+
+    if (constraintPitch) {
+        if (this->picth > 89.0f)
+            this->picth = 89.0f;
+        if (this->picth < -89.0f)
+            this->picth = -89.0f;
+    }
+
+    this->updateCameraVectors();
+}
+
+//滑轮
+void Camera::processMouseScroll(GLfloat yoffset)
+{
+    if (this->zoom >= 1.0f && this->zoom <= 45.0f)
+        this->zoom -= yoffset;
+    if (this->zoom > 45.0f)
+        this->zoom = 45.0f;
+    if (this->zoom < 1.0f)
+        this->zoom = 1.0f;
+}
+
+void Camera::updateCameraVectors()
+{
+    float yawR = qDegreesToRadians(this->yaw);
+    float picthR = qDegreesToRadians(this->picth);  //转换为弧度制Radians
+
+    QVector3D front3(cos(yawR) * cos(picthR), sin(picthR), sin(yawR) * cos(picthR));
+    this->front = front3.normalized();
+    this->right = QVector3D::crossProduct(this->front, this->worldUp).normalized();
+    this->up = QVector3D::crossProduct(this->right, this->front).normalized();
+}
+
 /**************灯光************************/
 
-Light::Light(): lightVBO(0){
+Light::Light(): VBO(0)
+{
     core = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 }
 
-Light::~Light(){
-    if(lightVBO != 0)
-        core->glDeleteBuffers(1, &lightVBO);
+Light::~Light()
+{
+    if(VBO != 0)
+        core->glDeleteBuffers(1, &VBO);
 }
 
-void Light::init(){
-
+void Light::init()
+{
     float lightVertices[] = {
-        // positions          // normals           // texture coords
         -0.5f, -0.5f, -0.5f,
         0.5f, -0.5f, -0.5f,
         0.5f,  0.5f, -0.5f,
@@ -622,16 +688,16 @@ void Light::init(){
         -0.5f,  0.5f, -0.5f
     };
 
-    core->glGenBuffers(1, &lightVBO);
+    core->glGenBuffers(1, &VBO);
 
-    core->glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+    core->glBindBuffer(GL_ARRAY_BUFFER, VBO);
     core->glBufferData(GL_ARRAY_BUFFER, sizeof(lightVertices), lightVertices, GL_STATIC_DRAW);
-
 }
 
-void Light::drawLight(){
+void Light::draw()
+{
     core->glEnableVertexAttribArray(0);
-    core->glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+    core->glBindBuffer(GL_ARRAY_BUFFER, VBO);
     core->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 
     core->glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -639,17 +705,19 @@ void Light::drawLight(){
 
 /**************坐标系************************/
 
-Coordinate::Coordinate(): VBO(0){
+Coordinate::Coordinate(): VBO(0)
+{
     core = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 }
 
-Coordinate::~Coordinate(){
+Coordinate::~Coordinate()
+{
     if(VBO != 0)
         core->glDeleteBuffers(1, &VBO);
 }
 
-void Coordinate::init(){
-
+void Coordinate::init()
+{
     float vertices[] = {
         // positions          // normals           // texture coords
         0.0f, 0.0f, 0.0f,
@@ -666,11 +734,10 @@ void Coordinate::init(){
 
     core->glBindBuffer(GL_ARRAY_BUFFER, VBO);
     core->glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-
 }
 
-void Coordinate::draw(){
+void Coordinate::draw()
+{
     core->glEnableVertexAttribArray(0);
     core->glBindBuffer(GL_ARRAY_BUFFER, VBO);
     core->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
@@ -680,16 +747,19 @@ void Coordinate::draw(){
 
 /**************纹理************************/
 
-Image::Image(): positionVBO(0){
+Image::Image(): positionVBO(0)
+{
     core = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 }
 
-Image::~Image(){
+Image::~Image()
+{
     if(positionVBO != 0)
         core->glDeleteBuffers(1, &positionVBO);
 }
 
-void Image::init(){
+void Image::init()
+{
     QVector<QVector3D> positions;
     positions.push_back(QVector3D(-0.5f, 0.0f, -0.5f));
     positions.push_back(QVector3D(0.5f, 0.0f, -0.5f));
@@ -706,18 +776,19 @@ void Image::init(){
     uvs.push_back(QVector2D(1, 1));
     uvs.push_back(QVector2D(0, 1));
 
-    core->glGenBuffers(1, &uvVBO);
-    core->glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
+    core->glGenBuffers(1, &VBO);
+    core->glBindBuffer(GL_ARRAY_BUFFER, VBO);
     core->glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(QVector2D), &uvs[0], GL_STATIC_DRAW);
 }
 
-void Image::draw(){
+void Image::draw()
+{
     core->glEnableVertexAttribArray(0);
     core->glBindBuffer(GL_ARRAY_BUFFER, positionVBO);
     core->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     core->glEnableVertexAttribArray(1);
-    core->glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
+    core->glBindBuffer(GL_ARRAY_BUFFER, VBO);
     core->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     core->glDrawArrays(GL_QUADS, 0, 4);
