@@ -25,8 +25,6 @@ protected:
 private:
     OpenGLWindow *m_GLWindow;
 
-
-private:
     Ui::MainWindow *ui;
 
 private slots:
@@ -34,7 +32,8 @@ private slots:
     {
       m_GLWindow->update();
     }
-    void on_action_triggered();
+    void on_openfile_triggered();
+    void on_recovery_triggered();
 };
 
 #endif // MAINWINDOW_H

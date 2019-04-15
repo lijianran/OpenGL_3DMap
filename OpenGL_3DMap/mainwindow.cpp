@@ -35,12 +35,25 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event){
     m_GLWindow->KeyReleaseEvent(event);
 }
 
-void MainWindow::on_action_triggered()
+void MainWindow::on_openfile_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("打开文件"),
                                                     "F:",
                                                     tr("地图文件(*osm)"));
-    qDebug()<<"filename : "<<fileName;
+    qDebug()<<fileName;
+    if(m_GLWindow != nullptr)
+    {
+        delete m_GLWindow;
+        m_GLWindow = new OpenGLWindow(this, fileName);
+        ui->horizontalLayout->addWidget(m_GLWindow);
+    }
+    else
+        m_GLWindow = new OpenGLWindow(this, fileName);
 
+}
+
+void MainWindow::on_recovery_triggered()
+{
+    m_GLWindow->Recovery();
 }

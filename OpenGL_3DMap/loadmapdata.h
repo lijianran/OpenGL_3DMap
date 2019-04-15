@@ -1,13 +1,6 @@
 #ifndef LOADMAPDATA_H
 #define LOADMAPDATA_H
 
-
-class LoadMapData
-{
-public:
-    LoadMapData();
-};
-
 #include <QOpenGLFunctions_3_3_Core>
 #include <QString>
 #include <QVector>
@@ -17,7 +10,8 @@ public:
 struct QPointD
 {
     QPointD(): x(0), y(0){}
-    QPointD(float x, float y){
+    QPointD(float x, float y)
+    {
         this->x = x;
         this->y = y;
     }
@@ -44,34 +38,33 @@ public:
     GLuint uvVBO;
     GLuint normalVBO;
 
-    int supFaceNum;// supple,增补，如果是建筑或其他多边形，需要增补的 三角剖分化后的面或底面的点的数量
+    int supFaceNum;
     bool isDraw;
 };
 
-class OpenSMLoading
+class LoadMapData
 {
 public:
-    OpenSMLoading();
-    ~OpenSMLoading();
+    LoadMapData();
+    ~LoadMapData();
     bool init(const QString &path);
     void initGL();
-    void drawGL_Highway();
-    void drawGL_Building();
+    void drawGL_Highway(); //way 道路
+    void drawGL_Building(); //building 建筑
     void drawGL_Amenity(); //amenity 便利设施
-    void drawGL_Leisure(); //leisure 娱乐设施，操场
-    void drawGL_Area(); //Area 西工大长安校区的边界线
-    void drawGL_Water();
-    void drawGL_Landuse(); //landuse草或森林
+    void drawGL_Leisure(); //leisure 娱乐设施
+    void drawGL_Area(); //Area 边界线
+    void drawGL_Water();//water 水
+    void drawGL_Landuse(); //landuse 草或森林
     void drawGL_Natural(); //natural 自然区域
 
     void drawGL_Recover();
     QMap<QString, QPointD> map_Nodes;
     QMap<QString, OpenSMWay> map_Ways;
-    QPointD maxPoint; //该变量存储way中highway的x最大值与y最大值
-    QPointD minPoint;//该变量存储way中highway的x最小值与y最小值
+    QPointD maxPoint;  //该变量存储way中highway的x最大值与y最大值
+    QPointD minPoint;  //该变量存储way中highway的x最小值与y最小值
 private:
     QOpenGLFunctions_3_3_Core *core;
 };
-
 
 #endif // LOADMAPDATA_H

@@ -1,10 +1,4 @@
 #include "loadmapdata.h"
-
-LoadMapData::LoadMapData()
-{
-
-}
-
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -21,7 +15,7 @@ bool InsideTriangle(float Ax, float Ay,
                     float Px, float Py);
 bool isPolygonCounterClocked(QVector<QVector2D> &contour);
 
-OpenSMLoading::OpenSMLoading(): core(nullptr)
+LoadMapData::LoadMapData(): core(nullptr)
 {
     maxPoint.x = 0;
     maxPoint.y = 0;
@@ -29,18 +23,18 @@ OpenSMLoading::OpenSMLoading(): core(nullptr)
     minPoint.y = 360;
 }
 
-OpenSMLoading::~OpenSMLoading()
+LoadMapData::~LoadMapData()
 {
 
 }
 
-bool OpenSMLoading::init(const QString &path)
+bool LoadMapData::init(const QString &path)
 {
     /************* 1. 打开文件 **************/
     QFile file(path);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        qDebug()<<"OpenSMLOADING ERROR::FILE CAN NOT OPEN!";
+        qDebug()<<"LoadMapData ERROR::FILE CAN NOT OPEN!";
         file.close();
         return false;
     }
@@ -98,7 +92,7 @@ bool OpenSMLoading::init(const QString &path)
     return true;
 }
 
-void OpenSMLoading::initGL()
+void LoadMapData::initGL()
 {
     core = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 
@@ -253,23 +247,26 @@ void OpenSMLoading::initGL()
                 )
         {
             /******** 2.1 building position -- handle data *********/
-            float height;
-            if(iter.value().kvPairs.contains("height")){ //设置建筑物的高度，修改osm文件，加一个tag=height，方便
-                QString num = iter.value().kvPairs["height"];
-                height = num.toFloat();
-                //        qDebug() << num << " " << height;
-            }else
-                height = 1.0f;
+            float height=0.5;
+//            if(iter.value().kvPairs.contains("height"))
+//            { //设置建筑物的高度，修改osm文件，加一个tag=height，方便
+//                QString num = iter.value().kvPairs["height"];
+//                height = num.toFloat();
+//            }
+//            else
+//                height = 0.5;
 
             QVector<QVector2D> vec_judgeCC;//judge polygon counter clock or clock 判断多边形是顺时针还是逆时针
-            for(int i = 0; i != iter.value().nodesID.size(); ++i){
+            for(int i = 0; i != iter.value().nodesID.size(); ++i)
+            {
                 QPointD current = this->map_Nodes[iter.value().nodesID[i]];
                 ori_positions.push_back(QVector3D(current.x, 0, -current.y));
                 vec_judgeCC.push_back(QVector2D(current.x, -current.y));
             }
             vec_judgeCC.pop_back();
 
-            for(int i = 0; i != iter.value().nodesID.size()-1; ++i){
+            for(int i = 0; i != iter.value().nodesID.size()-1; ++i)
+            {
                 QVector3D cur_b = ori_positions[i];      //current, 当前点 ,b -- bottom, t -- top
                 QVector3D cur_t = QVector3D(cur_b.x(), height, cur_b.z());
                 QVector3D next_b = ori_positions[i+1];
@@ -282,7 +279,8 @@ void OpenSMLoading::initGL()
             }
 
             /******** 2.2 building uv -- handle data *********/
-            for(int i = 0; i != iter.value().nodesID.size()-1; ++i){
+            for(int i = 0; i != iter.value().nodesID.size()-1; ++i)
+            {
                 uvs.push_back(QVector2D(0, 0));
                 uvs.push_back(QVector2D(1, 0));
                 uvs.push_back(QVector2D(1, 1));
@@ -291,7 +289,8 @@ void OpenSMLoading::initGL()
 
             /******** 2.3 building normal -- handle data *********/
             bool isPolygonCC = isPolygonCounterClocked(vec_judgeCC);
-            for(int i = 0; i != new_positions.size(); i += 4){
+            for(int i = 0; i != new_positions.size(); i += 4)
+            {
                 QVector3D vec1 = (new_positions[i+1] - new_positions[i]).normalized();
                 QVector3D vec2 = (new_positions[i+2] - new_positions[i]).normalized();
                 QVector3D per_vec = QVector3D::crossProduct(vec1, vec2).normalized(); //该面的法向量
@@ -319,7 +318,8 @@ void OpenSMLoading::initGL()
             for(int i = 0; i != result.size(); ++i)
                 new_positions.push_back(QVector3D(result[i].x(), 0.0f, result[i].y())); //建筑物 底面， 顶点
 
-            for(int i = 0; i != result.size(); ++i){
+            for(int i = 0; i != result.size(); ++i)
+            {
                 uvs.push_back(QVector2D(0, 1));           //建筑物 顶面，因为已经决定纹理样式采用色块了，故 顶面 的纹理坐标均给 （0，1），无伤大雅
                 uvs.push_back(QVector2D(0, 1));           //建筑物 底面
             }
@@ -328,6 +328,10 @@ void OpenSMLoading::initGL()
                 normals.push_back(QVector3D(0, 1, 0));     //建筑物，多边形顶面
             for(int i = 0; i != result.size(); ++i)
                 normals.push_back(QVector3D(0, -1, 0));    //建筑物，多边形底面
+        }
+        else
+        {
+
         }
 
         if(!new_positions.isEmpty())
@@ -352,7 +356,7 @@ void OpenSMLoading::initGL()
 }
 
 //画图
-void OpenSMLoading::drawGL_Highway()
+void LoadMapData::drawGL_Highway()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
@@ -377,36 +381,36 @@ void OpenSMLoading::drawGL_Highway()
     }
 }
 
-void OpenSMLoading::drawGL_Building()
+void LoadMapData::drawGL_Building()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
-    while(iter != this->map_Ways.end())
-    {
-        if(iter.value().kvPairs.contains("building") && !iter.value().isDraw)
+        QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+        while(iter != this->map_Ways.end())
         {
-            core->glEnableVertexAttribArray(0);
-            core->glBindBuffer(GL_ARRAY_BUFFER, iter.value().positionVBO);
-            core->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+            if(iter.value().kvPairs.contains("building") && !iter.value().isDraw)
+            {
+                core->glEnableVertexAttribArray(0);
+                core->glBindBuffer(GL_ARRAY_BUFFER, iter.value().positionVBO);
+                core->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-            core->glEnableVertexAttribArray(1);
-            core->glBindBuffer(GL_ARRAY_BUFFER, iter.value().uvVBO);
-            core->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+                core->glEnableVertexAttribArray(1);
+                core->glBindBuffer(GL_ARRAY_BUFFER, iter.value().uvVBO);
+                core->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-            core->glEnableVertexAttribArray(2);
-            core->glBindBuffer(GL_ARRAY_BUFFER, iter.value().normalVBO);
-            core->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+                core->glEnableVertexAttribArray(2);
+                core->glBindBuffer(GL_ARRAY_BUFFER, iter.value().normalVBO);
+                core->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-            core->glDrawArrays(GL_QUADS, 0, (iter.value().nodesID.size()-1)*4);
-            core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4, iter.value().supFaceNum);
-            core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4+iter.value().supFaceNum, iter.value().supFaceNum);
+                core->glDrawArrays(GL_QUADS, 0, (iter.value().nodesID.size()-1)*4);
+                core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4, iter.value().supFaceNum);
+                core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4+iter.value().supFaceNum, iter.value().supFaceNum);
 
-            iter.value().isDraw = true;
+                iter.value().isDraw = true;
+            }
+            ++iter;
         }
-        ++iter;
-    }
 }
 
-void OpenSMLoading::drawGL_Amenity()
+void LoadMapData::drawGL_Amenity()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
@@ -436,7 +440,7 @@ void OpenSMLoading::drawGL_Amenity()
 
 }
 
-void OpenSMLoading::drawGL_Leisure()
+void LoadMapData::drawGL_Leisure()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
@@ -465,7 +469,7 @@ void OpenSMLoading::drawGL_Leisure()
     }
 }
 
-void OpenSMLoading::drawGL_Area()
+void LoadMapData::drawGL_Area()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
@@ -494,7 +498,7 @@ void OpenSMLoading::drawGL_Area()
     }
 }
 
-void OpenSMLoading::drawGL_Water(){
+void LoadMapData::drawGL_Water(){
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
@@ -521,7 +525,7 @@ void OpenSMLoading::drawGL_Water(){
     }
 }
 
-void OpenSMLoading::drawGL_Landuse()
+void LoadMapData::drawGL_Landuse()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
@@ -550,7 +554,7 @@ void OpenSMLoading::drawGL_Landuse()
     }
 }
 
-void OpenSMLoading::drawGL_Natural()
+void LoadMapData::drawGL_Natural()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
@@ -579,7 +583,7 @@ void OpenSMLoading::drawGL_Natural()
     }
 }
 
-void OpenSMLoading::drawGL_Recover()
+void LoadMapData::drawGL_Recover()
 {
     QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())

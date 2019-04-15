@@ -53,11 +53,18 @@
    </property>
    <widget class="QMenu" name="menu">
     <property name="title">
-     <string>菜单</string>
+     <string>文件</string>
     </property>
-    <addaction name="action"/>
+    <addaction name="openfile"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>操作</string>
+    </property>
+    <addaction name="recovery"/>
    </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -68,9 +75,14 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action">
+  <action name="openfile">
    <property name="text">
     <string>打开</string>
+   </property>
+  </action>
+  <action name="recovery">
+   <property name="text">
+    <string>复原</string>
    </property>
   </action>
  </widget>

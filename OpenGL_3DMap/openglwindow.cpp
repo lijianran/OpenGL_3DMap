@@ -7,7 +7,7 @@ const QVector3D LIGHT_POSITION(0.0f, 0.0f, 0.0f);//灯光位置
 const QVector3D LIGHT_DIRECTION(0.0f, -0.5f, 1.0f);//灯光朝向
 
 
-static OpenSMLoading *map;//数据
+static LoadMapData *map;//数据
 static Light *light;//灯光
 static Coordinate *coordinate;//坐标
 static Image *image;//纹理
@@ -16,9 +16,10 @@ static Image *image;//纹理
 //QVector<OpenSMWay> tempways;
 
 
-OpenGLWindow::OpenGLWindow(QWidget *parent) : QOpenGLWidget(parent)
+OpenGLWindow::OpenGLWindow(QWidget *parent, QString filename) : QOpenGLWidget(parent)
 {
     //开启抗锯齿
+    m_filename = filename;
     QSurfaceFormat newGLFormat = this->format();
     newGLFormat.setSamples(4);
     this->setFormat(newGLFormat);
@@ -35,7 +36,6 @@ void OpenGLWindow::KeyPressEvent(QKeyEvent *event)
     int key = event->key();
     if(key <= 1024)
         this->keys[key] = GL_TRUE;
-
 }
 
 void OpenGLWindow::KeyReleaseEvent(QKeyEvent *event)
@@ -43,6 +43,18 @@ void OpenGLWindow::KeyReleaseEvent(QKeyEvent *event)
     int key = event->key();
     if(key <= 1024)
         this->keys[key] = GL_FALSE;
+}
+
+void OpenGLWindow::OpenMapFile(QString path)
+{
+    map->init(path);
+    map->initGL();
+    this->updateGL();
+}
+
+void OpenGLWindow::Recovery()
+{
+    camera->recoverCamera();
 }
 
 void OpenGLWindow::initializeGL()
@@ -90,8 +102,8 @@ void OpenGLWindow::initializeGL()
     coordinate->init();
 
     /************地图数据***********/
-    map = new OpenSMLoading();
-    map->init("C:/Users/lijianran/Desktop/map.osm");
+    map = new LoadMapData();
+    map->init(m_filename);
     map->initGL();
 
     //    /************ CarControl汽车控制 ***********/
@@ -396,16 +408,12 @@ void OpenGLWindow::paintGL()
 
 void OpenGLWindow::updateGL()
 {
-//    map->init("C:/Users/lijianran/Desktop/2.osm");
-//    map->initGL();
-
     if(this->isLineMode)
         core->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
         core->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     QMatrix4x4 projection;
-
     projection.perspective(camera->zoom, static_cast<GLfloat>(width())/static_cast<GLfloat>(height()), 0.01f, 200.f);
 //    QMatrix4x4 view = camera->getViewMatrix();
 
@@ -561,7 +569,7 @@ void OpenGLWindow::wheelEvent(QWheelEvent *event)
     camera->processMouseScroll(offset.y()/20.0f);
 }
 
-/**************相机************************/
+/************** 相机 ************************/
 
 QMatrix4x4 Camera::getViewMatrix()
 {
@@ -588,6 +596,16 @@ void Camera::processKeyboard(Camera_Movement direction, GLfloat deltaTime)
         this->position -= this->worldUp * velocity;
 }
 
+//恢复
+void Camera::recoverCamera()
+{
+    this->position = QVector3D(0.0f, 0.0f, 0.0f);
+    this->worldUp = QVector3D(0.0f, 1.0f, 0.0f);
+    this->yaw = 0.0f;
+    this->picth = 0.0f;
+    this->updateCameraVectors();
+}
+
 //鼠标
 void Camera::processMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constraintPitch)
 {
@@ -597,7 +615,8 @@ void Camera::processMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean co
     this->yaw += xoffset;
     this->picth += yoffset;
 
-    if (constraintPitch) {
+    if (constraintPitch)
+    {
         if (this->picth > 89.0f)
             this->picth = 89.0f;
         if (this->picth < -89.0f)
@@ -621,7 +640,7 @@ void Camera::processMouseScroll(GLfloat yoffset)
 void Camera::updateCameraVectors()
 {
     float yawR = qDegreesToRadians(this->yaw);
-    float picthR = qDegreesToRadians(this->picth);  //转换为弧度制Radians
+    float picthR = qDegreesToRadians(this->picth);
 
     QVector3D front3(cos(yawR) * cos(picthR), sin(picthR), sin(yawR) * cos(picthR));
     this->front = front3.normalized();

@@ -91,7 +91,7 @@ Shader ResourceManager::getShader(const QString& name)
     return map_Shaders[name];
 }
 
-Texture2D ResourceManager::loadTexture(const QString&  name, const QString& file, GLboolean alpha)
+Texture2D ResourceManager::loadTexture(const QString& name, const QString& file, GLboolean alpha)
 {
     Texture2D texture;
 

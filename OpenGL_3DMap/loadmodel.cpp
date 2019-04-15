@@ -2,7 +2,7 @@
 
 #include <QFile>
 //bool loadOBJ(const char *path, QVector<QVector3D> &out_positions, QVector<QVector2D> &out_uvs, QVector<QVector3D> &out_normals);
-static QOpenGLTexture *temp;
+//////static QOpenGLTexture *temp;
 
 Model::Model(){
     core = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
@@ -296,15 +296,15 @@ void Model::bindBufferData(){
         core->glGenBuffers(1, &objects[i].positionVBO);
         core->glBindBuffer(GL_ARRAY_BUFFER, objects[i].positionVBO);
 
-        core->glBufferData(GL_ARRAY_BUFFER, objects[i].positions.size() * sizeof(QVector3D), &objects[i].positions[0], GL_STATIC_DRAW);
+        core->glBufferData(GL_ARRAY_BUFFER, objects[i].positions.size() * int(sizeof(QVector3D)), &objects[i].positions[0], GL_STATIC_DRAW);
 
         core->glGenBuffers(1, &objects[i].uvVBO);
         core->glBindBuffer(GL_ARRAY_BUFFER, objects[i].uvVBO);
-        core->glBufferData(GL_ARRAY_BUFFER, objects[i].uvs.size() * sizeof(QVector2D), &objects[i].uvs[0], GL_STATIC_DRAW);
+        core->glBufferData(GL_ARRAY_BUFFER, objects[i].uvs.size() * int(sizeof(QVector2D)), &objects[i].uvs[0], GL_STATIC_DRAW);
 
         core->glGenBuffers(1, &objects[i].normalVBO);
         core->glBindBuffer(GL_ARRAY_BUFFER, objects[i].normalVBO);
-        core->glBufferData(GL_ARRAY_BUFFER, objects[i].normals.size() * sizeof(QVector3D), &objects[i].normals[0], GL_STATIC_DRAW);
+        core->glBufferData(GL_ARRAY_BUFFER, objects[i].normals.size() * int(sizeof(QVector3D)), &objects[i].normals[0], GL_STATIC_DRAW);
 
     }
 }

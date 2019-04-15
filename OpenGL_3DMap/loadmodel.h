@@ -1,7 +1,6 @@
 #ifndef LOADMODEL_H
 #define LOADMODEL_H
 
-
 #include <QOpenGLFunctions_3_3_Core>
 #include <resourcemanager.h>
 #include <QVector>

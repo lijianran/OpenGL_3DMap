@@ -21,7 +21,7 @@ void CarControl::setCarModel(const QString &path){
         qDebug() << "ERROR::CARCONTROL--SETCARMODEL::PATH ERROR!";
 }
 
-void CarControl::setOSM(OpenSMLoading *osm){
+void CarControl::setOSM(LoadMapData *osm){
     this->osm = osm;
 }
 
@@ -57,13 +57,13 @@ void CarControl::processKeyboard(Car_Movement direction, GLfloat deltaTime){
     if (direction == CAR_LEFT){
         this->yaw += turnVelocity;
         GLfloat yawR = qDegreesToRadians(this->yaw);
-        QVector3D front3(-sin(yawR), 0.0f, -cos(yawR));
+        QVector3D front3(float(-sin(double(yawR))), 0.0f, float(-cos(double(yawR))));
         this->front = front3.normalized();
     }
     if (direction == CAR_RIGHT){
         this->yaw -= turnVelocity;
         GLfloat yawR = qDegreesToRadians(this->yaw);
-        QVector3D front3(-sin(yawR), 0.0f, -cos(yawR));
+        QVector3D front3(float(-sin(double(yawR))), 0.0f, float(-cos(double(yawR))));
         this->front = front3.normalized();
     }
 }
