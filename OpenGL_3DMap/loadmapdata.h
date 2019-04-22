@@ -7,15 +7,15 @@
 #include <QMap>
 #include <QDebug>
 
-struct QPointD
+struct onePoint
 {
-    QPointD(): x(0), y(0){}
-    QPointD(float x, float y)
+    onePoint(): x(0), y(0){}
+    onePoint(float x, float y)
     {
         this->x = x;
         this->y = y;
     }
-    QPointD(const QPointD& other)
+    onePoint(const onePoint& other)
     {
         this->x = other.x;
         this->y = other.y;
@@ -25,11 +25,11 @@ struct QPointD
     float y;
 };
 
-class OpenSMWay
+class WayDatas
 {
 public:
-    OpenSMWay(): isDraw(false){}
-    ~OpenSMWay(){}
+    WayDatas(): isDraw(false){}
+    ~WayDatas(){}
 
     QVector<QString> nodesID;
     QMap<QString, QString> kvPairs;
@@ -59,10 +59,10 @@ public:
     void drawGL_Natural(); //natural 自然区域
 
     void drawGL_Recover();
-    QMap<QString, QPointD> map_Nodes;
-    QMap<QString, OpenSMWay> map_Ways;
-    QPointD maxPoint;  //该变量存储way中highway的x最大值与y最大值
-    QPointD minPoint;  //该变量存储way中highway的x最小值与y最小值
+    QMap<QString, onePoint> map_Nodes;
+    QMap<QString, WayDatas> map_Ways;
+    onePoint maxPoint;  //该变量存储way中highway的x最大值与y最大值
+    onePoint minPoint;  //该变量存储way中highway的x最小值与y最小值
 private:
     QOpenGLFunctions_3_3_Core *core;
 };

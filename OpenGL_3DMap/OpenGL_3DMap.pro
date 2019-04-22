@@ -29,7 +29,6 @@ SOURCES += \
         mainwindow.cpp \
     openglwindow.cpp \
     resourcemanager.cpp \
-    loadmodel.cpp \
     carcontrol.cpp \
     loadmapdata.cpp
 
@@ -37,9 +36,8 @@ HEADERS += \
         mainwindow.h \
     openglwindow.h \
     resourcemanager.h \
-    loadmodel.h \
-    carcontrol.h \
-    loadmapdata.h
+    loadmapdata.h \
+    carcontrol.h
 
 FORMS += \
         mainwindow.ui

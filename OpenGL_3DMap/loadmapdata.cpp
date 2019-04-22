@@ -58,14 +58,14 @@ bool LoadMapData::init(const QString &path)
             float y = list[8].mid(5, list[8].size()-6).toFloat();//纬度
             float x = list[9].mid(5, list[8].size()-8).toFloat();//经度
 
-            map_Nodes[node_id] = QPointD(x, y);
+            map_Nodes[node_id] = onePoint(x, y);
         }
         else if(line.indexOf(lineSearchWayKey) >= 0)
         {
             QStringList list = line.split(" ", QString::SkipEmptyParts);
             QString way_id = list[1].mid(4, list[1].size()-5);
 
-            OpenSMWay tempWay;
+            WayDatas tempWay;
             QString wayline = in.readLine();
             while(wayline.indexOf("/way") < 0)
             {
@@ -102,7 +102,7 @@ void LoadMapData::initGL()
         return;
     }
 
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         QVector<QVector3D> new_positions;             // 放入buffer进行绘图的点，已经由垂线生成了新的点
@@ -114,7 +114,7 @@ void LoadMapData::initGL()
         {   // 当前只处理公路的三维化
             for(int i = 1; i != iter.value().nodesID.size(); ++i)
             { //拿到way的最小与最大xy值
-                QPointD temp = this->map_Nodes[iter.value().nodesID[i]];
+                onePoint temp = this->map_Nodes[iter.value().nodesID[i]];
                 if(temp.x < this->minPoint.x)
                     this->minPoint.x = temp.x;
                 if(temp.x > this->maxPoint.x)
@@ -129,13 +129,13 @@ void LoadMapData::initGL()
             QVector<QVector3D> node2_vecs;                // 存储两个相邻节点的矢量差值，比如，9个节点，会有9个矢量差值
             QVector<QVector3D> per_vecs;                  // 通过矢量差值求得的两点连线的垂线
 
-            QPointD first = this->map_Nodes[iter.value().nodesID[0]];
+            onePoint first = this->map_Nodes[iter.value().nodesID[0]];
             ori_positions.push_back(QVector3D(first.x, 0, -first.y));
 
             for(int i = 1; i != iter.value().nodesID.size(); ++i)
             { //存后八个矢量差值
-                QPointD current = this->map_Nodes[iter.value().nodesID[i]];
-                QPointD last = this->map_Nodes[iter.value().nodesID[i-1]];
+                onePoint current = this->map_Nodes[iter.value().nodesID[i]];
+                onePoint last = this->map_Nodes[iter.value().nodesID[i-1]];
 
                 ori_positions.push_back(QVector3D(current.x, 0, -current.y));
                 node2_vecs.push_back(QVector3D(current.x-last.x, 0, -(current.y - last.y)));
@@ -249,7 +249,7 @@ void LoadMapData::initGL()
             /******** 2.1 building position -- handle data *********/
             float height=0.5;
 //            if(iter.value().kvPairs.contains("height"))
-//            { //设置建筑物的高度，修改osm文件，加一个tag=height，方便
+//            {
 //                QString num = iter.value().kvPairs["height"];
 //                height = num.toFloat();
 //            }
@@ -259,7 +259,7 @@ void LoadMapData::initGL()
             QVector<QVector2D> vec_judgeCC;//judge polygon counter clock or clock 判断多边形是顺时针还是逆时针
             for(int i = 0; i != iter.value().nodesID.size(); ++i)
             {
-                QPointD current = this->map_Nodes[iter.value().nodesID[i]];
+                onePoint current = this->map_Nodes[iter.value().nodesID[i]];
                 ori_positions.push_back(QVector3D(current.x, 0, -current.y));
                 vec_judgeCC.push_back(QVector2D(current.x, -current.y));
             }
@@ -358,7 +358,7 @@ void LoadMapData::initGL()
 //画图
 void LoadMapData::drawGL_Highway()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("highway"))
@@ -383,7 +383,7 @@ void LoadMapData::drawGL_Highway()
 
 void LoadMapData::drawGL_Building()
 {
-        QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+        QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
         while(iter != this->map_Ways.end())
         {
             if(iter.value().kvPairs.contains("building") && !iter.value().isDraw)
@@ -412,7 +412,7 @@ void LoadMapData::drawGL_Building()
 
 void LoadMapData::drawGL_Amenity()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("amenity") && !iter.value().isDraw)
@@ -442,7 +442,7 @@ void LoadMapData::drawGL_Amenity()
 
 void LoadMapData::drawGL_Leisure()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("leisure") && !iter.value().isDraw)
@@ -471,7 +471,7 @@ void LoadMapData::drawGL_Leisure()
 
 void LoadMapData::drawGL_Area()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("area") && !iter.value().isDraw)
@@ -499,7 +499,7 @@ void LoadMapData::drawGL_Area()
 }
 
 void LoadMapData::drawGL_Water(){
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("water") && !iter.value().isDraw){
@@ -527,7 +527,7 @@ void LoadMapData::drawGL_Water(){
 
 void LoadMapData::drawGL_Landuse()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("landuse") && !iter.value().isDraw)
@@ -556,7 +556,7 @@ void LoadMapData::drawGL_Landuse()
 
 void LoadMapData::drawGL_Natural()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         if(iter.value().kvPairs.contains("natural") && !iter.value().isDraw)
@@ -574,7 +574,7 @@ void LoadMapData::drawGL_Natural()
             core->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
             core->glDrawArrays(GL_QUADS, 0, (iter.value().nodesID.size()-1)*4);
-            core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4, iter.value().supFaceNum); //opengl不支持 凹边形的直接绘制，后面再改
+            core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4, iter.value().supFaceNum);
             core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4+iter.value().supFaceNum, iter.value().supFaceNum);
 
             iter.value().isDraw = true;
@@ -585,7 +585,7 @@ void LoadMapData::drawGL_Natural()
 
 void LoadMapData::drawGL_Recover()
 {
-    QMap<QString, OpenSMWay>::iterator iter = this->map_Ways.begin();
+    QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
         iter.value().isDraw = false;

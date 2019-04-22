@@ -40,6 +40,7 @@ private:
     void processInput(GLfloat dt);  //摄像机键盘处理函数
 
     GLboolean keys[1024];
+    GLboolean isOpenLighting;
     GLboolean isLineMode;
 
     GLboolean isFirstMouse;

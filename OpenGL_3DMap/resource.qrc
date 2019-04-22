@@ -61,5 +61,8 @@
         <file>textures/road.png</file>
         <file>textures/water.png</file>
         <file>textures/white.jpg</file>
+        <file>models/jeep/jeep.obj</file>
+        <file>models/jeep/jeep.mtl</file>
+        <file>models/jeep/maps/white.png</file>
     </qresource>
 </RCC>
