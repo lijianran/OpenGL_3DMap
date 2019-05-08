@@ -7,14 +7,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
     m_GLWindow = new OpenGLWindow(this);
 
     ui->horizontalLayout->addWidget(m_GLWindow);
-//    ui->horizontalLayout->setStretch(0,1);
-//    ui->horizontalLayout->setStretch(1,3);
     ui->mainToolBar->hide();
-
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::slot_updateOpenGL);

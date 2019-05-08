@@ -13,9 +13,6 @@ static Coordinate *coordinate;  //坐标
 static Image *image;  //纹理
 static CarControl control;  //车辆
 
-//QVector<WayDatas> tempways;
-
-
 OpenGLWindow::OpenGLWindow(QWidget *parent, QString filename) : QOpenGLWidget(parent)
 {
     //开启抗锯齿
@@ -276,30 +273,7 @@ void OpenGLWindow::initializeGL()
         ResourceManager::getShader("image2D").use().setMatrix4f("model", model);
     }
 
-    /************  小车参数 略复杂 待删除！！！  ******************/
-    //  QVector3D trans;
-    //  QMap<QString, OpenSMWay>::iterator iter = map->map_Ways.begin();
-    //  while(iter != map->map_Ways.end()){
-    //    if(iter.value().kvPairs.contains("highway")){
-    //      tempways.push_back(iter.value());
-    //      QPointD temp = map->map_Nodes[iter.value().nodesID[0]];
-    //      trans = QVector3D(temp.x, 0, -temp.y);
-    //    }
-    //    ++iter;
-    //  }
-
-    //  model.setToIdentity();
-    //  model.scale(100.0f, 1.0f, 100.0f);
-    ////  model.translate(-108.75f, 0.01f, 34.03f);
-    ////  model.translate(trans);
-    //  model.scale(0.000002f, 0.0002f, 0.000002f);
-    //  model.translate(170.0f, 35.0f, 0);
-
-
-
-
     ResourceManager::getShader("model").use().setMatrix4f("model", control.getModelMatrix());
-
 }
 
 void OpenGLWindow::resizeGL(int w, int h)
@@ -465,41 +439,8 @@ void OpenGLWindow::updateGL()
     ResourceManager::getShader("normal_test").use().setMatrix4f("projection", projection);
     ResourceManager::getShader("normal_test").use().setMatrix4f("view", camera->getViewMatrix());
 
-
-
-    /************* 小车临时变量 待删除  *************/
     ResourceManager::getShader("model").use().setMatrix4f("model", control.getModelMatrix());
 
-    //  if(temp_k < tempways.size()){
-    //  QPointD temp_cur = map->map_Nodes[tempways[temp_k].nodesID[temp_j]];
-    //  QPointD temp_next = map->map_Nodes[tempways[temp_k].nodesID[temp_j+1]];
-    //  QPointD temp_min(temp_next.x-temp_cur.x, temp_next.y-temp_cur.y);
-    //  temp_min.x /= 100;
-    //  temp_min.y /= 100;
-    //  QPointD temp(temp_cur.x + temp_min.x*temp_i, temp_cur.y+temp_min.y*temp_i);
-    //  temp_i++;
-    //  if(temp_i == 100){
-    //      temp_j++;
-    //      temp_i = 0;
-    //  }
-    //  if(temp_j == tempways[temp_k].nodesID.size()-1){
-    //      temp_k++;
-    //      temp_j = 0;
-    //  }
-
-    //  QVector3D  trans;
-    //  trans = QVector3D(temp.x, 0, -temp.y);
-    //  QMatrix4x4 model;
-
-    //  model.setToIdentity();
-    //  model.scale(100.0f, 1.0f, 100.0f);
-    //  model.translate(-108.75f, 0.01f, 34.03f);
-    //  model.translate(trans);
-    //  model.scale(0.000001f, 0.0001f, 0.000001f);
-    //  model.translate(170.0f, 35.0f, 0);
-    //  ResourceManager::getShader("model").use().setMatrix4f("model", model);
-
-    //  }
 }
 
 void OpenGLWindow::processInput(GLfloat dt)
@@ -519,13 +460,13 @@ void OpenGLWindow::processInput(GLfloat dt)
         camera->processKeyboard(CAMERA_DOWN, dt);
     //车辆控制
     if (keys[Qt::Key_I])
-        control.processKeyboard(CAR_STRAIGHT, dt);
+        control.processKeyBoard(CAR_STRAIGHT, dt);
     if (keys[Qt::Key_K])
-        control.processKeyboard(CAR_BACKWARD, dt);
+        control.processKeyBoard(CAR_BACKWARD, dt);
     if (keys[Qt::Key_J])
-        control.processKeyboard(CAR_LEFT, dt);
+        control.processKeyBoard(CAR_LEFT, dt);
     if (keys[Qt::Key_L])
-        control.processKeyboard(CAR_RIGHT, dt);
+        control.processKeyBoard(CAR_RIGHT, dt);
 }
 
 void OpenGLWindow::mouseMoveEvent(QMouseEvent *event)
@@ -740,7 +681,6 @@ Coordinate::~Coordinate()
 void Coordinate::init()
 {
     float vertices[] = {
-        // positions          // normals           // texture coords
         0.0f, 0.0f, 0.0f,
         1.0f, 0.0f, 0.0f,
 

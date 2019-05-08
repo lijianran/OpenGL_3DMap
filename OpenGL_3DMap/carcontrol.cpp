@@ -189,13 +189,13 @@ bool Model::loadOBJ(const QString &path)
                 return false;
             }
             QTextStream mtl_in(&mtl_file);
-            QString mtl_line;//读取材质文件流的一行
+            QString mtl_line;
 
             Material material;
             QString matName;//材质的名称
             while(!mtl_in.atEnd())
             {
-                mtl_line = mtl_in.readLine();//读取一行,还有读取所有readAll();
+                mtl_line = mtl_in.readLine();
                 QStringList mtl_list = mtl_line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
                 if(mtl_list.empty())
                     continue;
@@ -278,7 +278,7 @@ bool Model::loadOBJ(const QString &path)
             }
 
             Object object;
-            objects.push_back(object);//obj模型文件中的第一个object对象，因为一个obj模型可能还有多个object对象
+            objects.push_back(object);
         }
         else if (list[0] == "v")
         {

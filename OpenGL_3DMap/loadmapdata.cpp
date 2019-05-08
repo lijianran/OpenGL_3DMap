@@ -53,7 +53,6 @@ bool LoadMapData::init(const QString &path)
         { //寻找结点
             QStringList list = line.split(" ", QString::SkipEmptyParts);
             QString node_id;//节点ID
-            // <node id="1876846188" visible="true" version="1" changeset="12814582" timestamp="2012-08-21T22:28:03Z" user="cabineer" uid="690229" lat="34.0301005" lon="108.7635596"/>
             node_id = list[1].mid(4, list[1].size()-5);
             float y = list[8].mid(5, list[8].size()-6).toFloat();//纬度
             float x = list[9].mid(5, list[8].size()-8).toFloat();//经度
@@ -105,15 +104,15 @@ void LoadMapData::initGL()
     QMap<QString, WayDatas>::iterator iter = this->map_Ways.begin();
     while(iter != this->map_Ways.end())
     {
-        QVector<QVector3D> new_positions;             // 放入buffer进行绘图的点，已经由垂线生成了新的点
-        QVector<QVector3D> ori_positions;             // 一条way的初始节点位置
+        QVector<QVector3D> new_positions;  // 放入buffer进行绘图的点，已经由垂线生成了新的点
+        QVector<QVector3D> ori_positions;  // 一条way的初始节点位置
         QVector<QVector2D> uvs;
         QVector<QVector3D> normals;
 
         if(iter.value().kvPairs.contains("highway"))
-        {   // 当前只处理公路的三维化
+        {  // 当前只处理公路的三维化
             for(int i = 1; i != iter.value().nodesID.size(); ++i)
-            { //拿到way的最小与最大xy值
+            {  //拿到way的最小与最大xy值
                 onePoint temp = this->map_Nodes[iter.value().nodesID[i]];
                 if(temp.x < this->minPoint.x)
                     this->minPoint.x = temp.x;
@@ -126,32 +125,32 @@ void LoadMapData::initGL()
             }
             /******** 1.1 highway position -- handle data *********/
 
-            QVector<QVector3D> node2_vecs;                // 存储两个相邻节点的矢量差值，比如，9个节点，会有9个矢量差值
-            QVector<QVector3D> per_vecs;                  // 通过矢量差值求得的两点连线的垂线
+            QVector<QVector3D> node2_vecs;
+            QVector<QVector3D> per_vecs;
 
             onePoint first = this->map_Nodes[iter.value().nodesID[0]];
             ori_positions.push_back(QVector3D(first.x, 0, -first.y));
 
             for(int i = 1; i != iter.value().nodesID.size(); ++i)
-            { //存后八个矢量差值
+            {
                 onePoint current = this->map_Nodes[iter.value().nodesID[i]];
                 onePoint last = this->map_Nodes[iter.value().nodesID[i-1]];
 
                 ori_positions.push_back(QVector3D(current.x, 0, -current.y));
                 node2_vecs.push_back(QVector3D(current.x-last.x, 0, -(current.y - last.y)));
             }
-            node2_vecs.push_front(node2_vecs.first());//存第一个矢量差值
+            node2_vecs.push_front(node2_vecs.first());
 
-            for(int i = 0; i < node2_vecs.size(); ++i)//由矢量差值，通过叉乘 计算垂直与路的垂线
+            for(int i = 0; i < node2_vecs.size(); ++i)
                 per_vecs.push_back(QVector3D::crossProduct(QVector3D(0, 1, 0), node2_vecs[i]).normalized());
 
-            for(int i = node2_vecs.size()-2; i > 0; --i)//矫正垂线
+            for(int i = node2_vecs.size()-2; i > 0; --i)
                 per_vecs[i] = (per_vecs[i] + per_vecs[i+1]).normalized();
 
             //通过垂线 计算新增添的点
             for(int i = 0; i < ori_positions.size()-1; ++i)
             {
-                QVector3D cur_b = ori_positions[i] - 0.0001f * per_vecs[i];      //current, 当前点 ,b -- bottom, t -- top
+                QVector3D cur_b = ori_positions[i] - 0.0001f * per_vecs[i];
                 QVector3D cur_add_b = ori_positions[i] + 0.0001f * per_vecs[i];
                 QVector3D next_b = ori_positions[i+1] - 0.0001f * per_vecs[i+1];
                 QVector3D next_add_b = ori_positions[i+1] + 0.0001f * per_vecs[i+1];
@@ -228,10 +227,10 @@ void LoadMapData::initGL()
 
             /******** 1.3 highway normal -- handle data *********/
             for(int i = 0; i < new_positions.size(); i += 4)
-            { //通过叉乘计算 立方体一个面的法线， 即一次 刷新四个点
+            {
                 QVector3D vec1 = (new_positions[i+1] - new_positions[i]).normalized();
                 QVector3D vec2 = (new_positions[i+2] - new_positions[i]).normalized();
-                QVector3D per_vec = QVector3D::crossProduct(vec2, vec1).normalized(); //该面的法向量
+                QVector3D per_vec = QVector3D::crossProduct(vec2, vec1).normalized();
 
                 for(int j=0; j<4; ++j)
                     normals.push_back(per_vec);
@@ -240,23 +239,24 @@ void LoadMapData::initGL()
         else if(iter.value().kvPairs.contains("building") ||
                 iter.value().kvPairs.contains("amenity") ||
                 iter.value().kvPairs.contains("leisure") ||
-                iter.value().kvPairs.contains("area") ||
                 iter.value().kvPairs.contains("natural") ||
                 iter.value().kvPairs.contains("water") ||
-                iter.value().kvPairs.contains("landuse")
-                )
+                iter.value().kvPairs.contains("area") ||
+                iter.value().kvPairs.contains("landuse"))
         {
             /******** 2.1 building position -- handle data *********/
             float height=0.5;
-//            if(iter.value().kvPairs.contains("height"))
-//            {
-//                QString num = iter.value().kvPairs["height"];
-//                height = num.toFloat();
-//            }
-//            else
-//                height = 0.5;
+            if(iter.value().kvPairs.contains("height"))
+            {
+                QString num = iter.value().kvPairs["height"];
+                height = num.toFloat();
+                if(height > 1)
+                    height = height/100;
+            }
+            else
+                height = 0.5;
 
-            QVector<QVector2D> vec_judgeCC;//judge polygon counter clock or clock 判断多边形是顺时针还是逆时针
+            QVector<QVector2D> vec_judgeCC;
             for(int i = 0; i != iter.value().nodesID.size(); ++i)
             {
                 onePoint current = this->map_Nodes[iter.value().nodesID[i]];
@@ -267,7 +267,7 @@ void LoadMapData::initGL()
 
             for(int i = 0; i != iter.value().nodesID.size()-1; ++i)
             {
-                QVector3D cur_b = ori_positions[i];      //current, 当前点 ,b -- bottom, t -- top
+                QVector3D cur_b = ori_positions[i];
                 QVector3D cur_t = QVector3D(cur_b.x(), height, cur_b.z());
                 QVector3D next_b = ori_positions[i+1];
                 QVector3D next_t = QVector3D(next_b.x(), height, next_b.z());
@@ -293,7 +293,7 @@ void LoadMapData::initGL()
             {
                 QVector3D vec1 = (new_positions[i+1] - new_positions[i]).normalized();
                 QVector3D vec2 = (new_positions[i+2] - new_positions[i]).normalized();
-                QVector3D per_vec = QVector3D::crossProduct(vec1, vec2).normalized(); //该面的法向量
+                QVector3D per_vec = QVector3D::crossProduct(vec1, vec2).normalized();
 
                 for(int j=0; j<4; ++j)
                     if(!isPolygonCC)
@@ -304,8 +304,6 @@ void LoadMapData::initGL()
 
 
             /******** 增补建筑物上下面 多边形 ***********/
-            /* opengl 的polygon绘图方法不支持 凹边形的直接绘制！！！！*/
-
             QVector<QVector2D> topFace;
             QVector<QVector2D> result;
             for(int i = 0; i != iter.value().nodesID.size()-1; ++i)
@@ -320,7 +318,7 @@ void LoadMapData::initGL()
 
             for(int i = 0; i != result.size(); ++i)
             {
-                uvs.push_back(QVector2D(0, 1));           //建筑物 顶面，因为已经决定纹理样式采用色块了，故 顶面 的纹理坐标均给 （0，1），无伤大雅
+                uvs.push_back(QVector2D(0, 1));
                 uvs.push_back(QVector2D(0, 1));           //建筑物 底面
             }
 
@@ -460,7 +458,7 @@ void LoadMapData::drawGL_Leisure()
             core->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
             core->glDrawArrays(GL_QUADS, 0, (iter.value().nodesID.size()-1)*4);
-            core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4, iter.value().supFaceNum); //opengl不支持 凹边形的直接绘制，后面再改
+            core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4, iter.value().supFaceNum);
             core->glDrawArrays(GL_TRIANGLES, (iter.value().nodesID.size()-1)*4+iter.value().supFaceNum, iter.value().supFaceNum);
 
             iter.value().isDraw = true;
@@ -712,7 +710,7 @@ bool InsideTriangle(float Ax, float Ay,
     return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 }
 
-//判断传进来的多边形数组是否是 逆时针
+//判断传进来的多边形数组是否是逆时针
 bool isPolygonCounterClocked(QVector<QVector2D> &contour)
 {
     if(contour.size() < 3)
@@ -720,11 +718,7 @@ bool isPolygonCounterClocked(QVector<QVector2D> &contour)
         qDebug() << "contour.size is smaller than 3, it can not form a polygon";
         return false;
     }
-    /*
-    判断组成多边形(无论凹凸性)的点的顺序 是否为逆时针：
-    1，找到x最大或y最大的点v1，因为该点必为凸点。
-    2，找到两个矢量，v1-v0,与v2-v1, 叉乘这两个矢量，得到的值若为正值，则为逆时针，负为顺时针
-    */
+
     int maxIndex = -1;
     float max = -1.0f;
     for(int i = 0; i < contour.size(); ++i)

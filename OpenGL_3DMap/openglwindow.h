@@ -17,7 +17,7 @@ class Camera;
 class OpenGLWindow : public QOpenGLWidget
 {
 public:
-    explicit OpenGLWindow(QWidget *parent = nullptr, QString filename="");
+    explicit OpenGLWindow(QWidget *parent = nullptr, QString filename=":/res/datas/default.osm");
     ~OpenGLWindow() override;
 
     void KeyPressEvent(QKeyEvent *event);  //键盘按下事件

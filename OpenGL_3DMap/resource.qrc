@@ -64,5 +64,6 @@
         <file>models/jeep/jeep.obj</file>
         <file>models/jeep/jeep.mtl</file>
         <file>models/jeep/maps/white.png</file>
+        <file>datas/default.osm</file>
     </qresource>
 </RCC>
